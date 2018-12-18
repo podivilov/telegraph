@@ -124,7 +124,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     DEVICE_TYPE="COMMON"
   else
     # Postman device type
-    DEVICE_TYPE="Postman"
+    DEVICE_TYPE="POSTMAN"
   fi
 
   # Force to create $MOUNTPATH
@@ -166,7 +166,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   fi
 
   # If this device is a postman device
-  if [[ "$DEVICE_TYPE" == "Postman" ]]; then
+  if [[ "$DEVICE_TYPE" == "POSTMAN" ]]; then
     # Get postman device ID from $MOUNTPATH/config.ini
     ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
 
@@ -550,7 +550,7 @@ else
     log notice "Filling the common device..."
   else
     # Postman device type
-    DEVICE_TYPE="Postman"
+    DEVICE_TYPE="POSTMAN"
 
     # Notify user about we are filling the postman device
     log notice "Filling the postman device..."
