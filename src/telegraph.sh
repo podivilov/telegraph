@@ -104,7 +104,7 @@ if [[ -z "$DEVICE_UUID" ]]; then
 fi
 
 # If $DEVICE is a valid Telegraph device
-if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEVICE_UUID.TG" ]]; then
+if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEVICE_UUID.TXT" ]]; then
 
   # 1. Prepare the device
   # 1.1. Force to create $MOUNTPATH
@@ -142,33 +142,33 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   # If this device is a common device
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
     # Remove all but common device Telegraph files
-    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(INBOX|OUTBOX|SYSTEM.TG);
-    cd "$MOUNTPATH/INBOX"  > /dev/null 2>&1; rm -rf !(*.TG);
-    cd "$MOUNTPATH/OUTBOX" > /dev/null 2>&1; rm -rf !(*.TG);
+    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(INBOX|OUTBOX|CONFIG.SYS);
+    cd "$MOUNTPATH/INBOX"  > /dev/null 2>&1; rm -rf !(*.TXT);
+    cd "$MOUNTPATH/OUTBOX" > /dev/null 2>&1; rm -rf !(*.TXT);
     cd "$TGPWD"
   # If this device is a POSTMAN device
   else
     # Remove all but POSTMAN device Telegraph files
-    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(POSTMAN|SYSTEM.TG);
+    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(POSTMAN|CONFIG.SYS);
     cd "$TGPWD"
   fi
 
   # If $DEVICE has label TELEGRAPH,
-  # but there is no SYSTEM.TG file in root,
+  # but there is no CONFIG.SYS file in root,
   # force to exit and notify user
-  if [[ ! -f "$MOUNTPATH/SYSTEM.TG" ]]; then
+  if [[ ! -f "$MOUNTPATH/CONFIG.SYS" ]]; then
     # Force to unmount the device
     umount -f "$DEVICE" &> /dev/null
 
     # Notify user about we are encountered unexpected error
-    log error "No SYSTEM.TG were found on device. Giving up!"; beep 8 &
+    log error "No CONFIG.SYS were found on device. Giving up!"; beep 8 &
     exit 1
   fi
 
   # If this device is a POSTMAN device
   if [[ "$DEVICE_TYPE" == "POSTMAN" ]]; then
-    # Get postman device ID from $MOUNTPATH/SYSTEM.TG
-    ID=$(cat "$MOUNTPATH/SYSTEM.TG" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
+    # Get postman device ID from $MOUNTPATH/CONFIG.SYS
+    ID=$(cat "$MOUNTPATH/CONFIG.SYS" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
 
     # Check if destination terminal ID is correct
     if [[ "`echo -n \"$ID\" | wc -c`" != "11" ]]; then
@@ -181,14 +181,14 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     fi
 
     # For equals check
-    ORIGIN_ID=$(cat "$MOUNTPATH/SYSTEM.TG" | sed -n 2p | cut -d "=" -f2)
+    ORIGIN_ID=$(cat "$MOUNTPATH/CONFIG.SYS" | sed -n 2p | cut -d "=" -f2)
 
     # Set ORIGIN_TERMINAL_ID variable
     ORIGIN_TERMINAL_ID=$(echo "$ID" | cut -c1-7)"0000"
 
     # Check POSTMAN identity
-    POSTMAN_SECRET=$(cat "$MOUNTPATH/SYSTEM.TG"                 | sed -n 3p | cut -d "=" -f2)
-    ORIGIN_POSTMAN_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID.TG" | sed -n 3p | cut -d "=" -f2)
+    POSTMAN_SECRET=$(cat "$MOUNTPATH/CONFIG.SYS"                | sed -n 3p | cut -d "=" -f2)
+    ORIGIN_POSTMAN_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID.TXT" | sed -n 3p | cut -d "=" -f2)
 
     # If this POSTMAN device is origin POSTMAN device
     # for this terminal
@@ -245,27 +245,27 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   fi
 
   # If $DEVICE has label TELEGRAPH,
-  # and there is SYSTEM.TG file presented in root,
+  # and there is CONFIG.SYS file presented in root,
   # but SECRET is not correct
   # (not set or not equals to original SECRET of user ID in root),
   # force to exit and notify user
-  USER_SECRET=$(cat "$MOUNTPATH/SYSTEM.TG"          | sed -n 3p | cut -d "=" -f2)
-  REAL_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID.TG" | sed -n 3p | cut -d "=" -f2)
+  USER_SECRET=$(cat "$MOUNTPATH/CONFIG.SYS"         | sed -n 3p | cut -d "=" -f2)
+  REAL_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID.TXT" | sed -n 3p | cut -d "=" -f2)
 
   if [[ "$USER_SECRET" != "$REAL_SECRET" ]]; then
     # Force to unmount the device
     umount -f "$DEVICE" &> /dev/null
 
     # Notify user about we are encountered unexpected error
-    log error "Incorrect SECRET for this device were found in SYSTEM.TG. Giving up!"; beep 8 &
+    log error "Incorrect SECRET for this device were found in CONFIG.SYS. Giving up!"; beep 8 &
     exit 1
   fi
 
-  # If all is okay, get ID from $MOUNTPATH/SYSTEM.TG
-  ID=$(cat "$MOUNTPATH/SYSTEM.TG" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
+  # If all is okay, get ID from $MOUNTPATH/CONFIG.SYS
+  ID=$(cat "$MOUNTPATH/CONFIG.SYS" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
 
   # For equals check
-  ORIGIN_ID=$(cat "$MOUNTPATH/SYSTEM.TG" | sed -n 2p | cut -d "=" -f2)
+  ORIGIN_ID=$(cat "$MOUNTPATH/CONFIG.SYS" | sed -n 2p | cut -d "=" -f2)
 
   # Check OUTBOX folder in $MOUNTPATH/OUTBOX
   # for outgoing messages. Skip, if there is
@@ -280,7 +280,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     # 3. Does the recipient attached to this terminal?
     #
 
-    for FILE in "$MOUNTPATH/OUTBOX/"*.TG; do
+    for FILE in "$MOUNTPATH/OUTBOX/"*.TXT; do
       # Get size of file, recipient number
       # and number length
       SIZE=$(stat -c %s "$FILE")
@@ -305,11 +305,11 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
 
             # Copy this file to $TGPATH/MESSAGES/INGOING
             SUFFIX_NUMBER="0"
-            while test -e "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX".TG; do
+            while test -e "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX".TXT; do
               ((++SUFFIX_NUMBER))
               SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
             done
-            cp "$FILE" "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX".TG
+            cp "$FILE" "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX".TXT
 
             # Remove this file from OUTBOX of user
             rm "$FILE"
@@ -335,11 +335,11 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
 
             # Copy this file to $TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER
             SUFFIX_NUMBER="0"
-            while test -e "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX".TG; do
+            while test -e "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX".TXT; do
               ((++SUFFIX_NUMBER))
               SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
             done
-            cp "$FILE" "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX".TG
+            cp "$FILE" "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX".TXT
 
             # Remove this file from OUTBOX of user
             rm "$FILE"
@@ -360,21 +360,21 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     elif [[ "$CORRECT_FILES" -ge "1" && "$SKIPPED_FILES" -ge "1" ]]; then
       # Notify user that not all files were been sent
       SUFFIX_NUMBER="0"
-      while test -e "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TG; do
+      while test -e "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TXT; do
         ((++SUFFIX_NUMBER))
         SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
       done
-      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории OUTBOX.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .TG\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории OUTBOX. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TG
+      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории OUTBOX.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .TXT\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории OUTBOX. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TXT
 
       # Notify user about skipped files count
       log info "Successfully sent $CORRECT_FILES letter(-s) and skipped $SKIPPED_FILES letter(-s)."
     elif [[ "$CORRECT_FILES" -eq "0" && "$SKIPPED_FILES" -ge "1" ]]; then
       SUFFIX_NUMBER="0"
-      while test -e "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TG; do
+      while test -e "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TXT; do
         ((++SUFFIX_NUMBER))
         SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
       done
-      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории OUTBOX.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .TG\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории OUTBOX. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TG
+      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории OUTBOX.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .TXT\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории OUTBOX. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".TXT
 
       # Notify user about skipped files count
       log info "Skipped $SKIPPED_FILES letter(-s), no correct letters were found."
@@ -390,7 +390,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   # no new ingoing messages are presented
   if [[ ! -z "$(ls -A $TGPATH/MESSAGES/INGOING/$ID 2>/dev/null)" ]]; then
     # Retrieve all new messages to $MOUNTPOINT/INBOX folder
-    for FILE in "$TGPATH/MESSAGES/INGOING/$ID/"*.TG; do
+    for FILE in "$TGPATH/MESSAGES/INGOING/$ID/"*.TXT; do
       # +1 to retrieved messages count
       ((RETRIEVED_MESSAGES++))
 
@@ -398,13 +398,13 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       FILE_BASENAME=$(basename "$FILE" | cut -f 1 -d '.')
 
       SUFFIX_NUMBER="0"
-      while test -e "$MOUNTPATH/INBOX/$FILE_BASENAME$SUFFIX".TG; do
+      while test -e "$MOUNTPATH/INBOX/$FILE_BASENAME$SUFFIX".TXT; do
         ((++SUFFIX_NUMBER))
         SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
       done
 
       # Copy this file to $MOUNTPATH/INBOX
-      cp "$FILE" "$MOUNTPATH/INBOX/$FILE_BASENAME$SUFFIX".TG
+      cp "$FILE" "$MOUNTPATH/INBOX/$FILE_BASENAME$SUFFIX".TXT
 
       # Remove this file from $TGPATH/MESSAGES/INGOING/$ID of user
       rm "$FILE"
@@ -446,7 +446,7 @@ else
   #                              [TELEGRAPH]
   #                              ID=USER_ID
   #                              SECRET=SECRET_KEY (generated once)
-  #                              - each file name is equals to DEVICE_HARDWARE_ID.TG
+  #                              - each file name is equals to DEVICE_HARDWARE_ID.TXT
   #
   # $TGPATH/MESSAGES/INGOING/ID - each file contents is equals to:
   #                              MESSAGE_BODY
@@ -454,13 +454,13 @@ else
   #                              what has been sended this file
   #                              - ID in path should be replaced by
   #                              recipient unique identification number
-  #                              - each file extension is equals to .TG
+  #                              - each file extension is equals to .TXT
   #
   # --------------------------------------------------------------------
   #    NEW USER ID's GENERATION
   # --------------------------------------------------------------------
   #
-  # 1. Check $TGPATH/UUID/DEVICE_HARDWARE_ID.TG
+  # 1. Check $TGPATH/UUID/DEVICE_HARDWARE_ID.TXT
   #    If device hardware ID exists and secret key is not equal
   #    for key, that stored in root partition of USB flash device,
   #    decline registration request and do not format the device
@@ -468,7 +468,7 @@ else
   # 2. Generate new ID next to last ID, stored in this terminal,
   #    from 0001 up to 9999 per terminal
   #
-  # 3. Create new file at $TGPATH/UUID/DEVICE_HARDWARE_ID.TG, filled with
+  # 3. Create new file at $TGPATH/UUID/DEVICE_HARDWARE_ID.TXT, filled with
   #    these data:
   #
   #    [TELEGRAPH]
@@ -484,7 +484,7 @@ else
   mkdir -p "$TGPATH/MESSAGES/"{INGOING,OUTGOING}
 
   # Check is this device already been registered
-  if [[ -f "$TGPATH/UUID/$DEVICE_UUID.TG" ]]; then
+  if [[ -f "$TGPATH/UUID/$DEVICE_UUID.TXT" ]]; then
     # Force to unmount $DEVICE
     umount -f "$DEVICE" &> /dev/null
 
@@ -516,18 +516,18 @@ else
   # even been registered on this terminal
   if [[ -z "$(ls -A $TGPATH/UUID)" ]]; then
     NEW_ID="0001"
-    printf "[TELEGRAPH]\nID=$COUNTRY_ID$ZONE_ID$TERMINAL_ID$NEW_ID\nSECRET=$NEW_ID_SECRET" > "$TGPATH/UUID/$DEVICE_UUID".TG
+    printf "[TELEGRAPH]\nID=$COUNTRY_ID$ZONE_ID$TERMINAL_ID$NEW_ID\nSECRET=$NEW_ID_SECRET" > "$TGPATH/UUID/$DEVICE_UUID".TXT
   else
-    # Get second line of last modified file $TGPATH/UUID/$DEVICE_UUID.TG
+    # Get second line of last modified file $TGPATH/UUID/$DEVICE_UUID.TXT
     LAST_FILE_MODIFIED="`ls -Art $TGPATH/UUID      | tail -n 1`"
     LAST_ID="`cat $TGPATH/UUID/$LAST_FILE_MODIFIED | sed -n 2p | cut -d: -f1 | tail -c 5`"
     if [[ "$LAST_ID" != "9999" ]]; then
       LAST_ID="`echo $LAST_ID | sed 's/^0*//'`"; ((LAST_ID++))
       NEW_ID="`printf \"%04.f\" \"$LAST_ID\"`"
-      printf "[TELEGRAPH]\nID=$COUNTRY_ID$ZONE_ID$TERMINAL_ID$NEW_ID\nSECRET=$NEW_ID_SECRET" > "$TGPATH/UUID/$DEVICE_UUID".TG
+      printf "[TELEGRAPH]\nID=$COUNTRY_ID$ZONE_ID$TERMINAL_ID$NEW_ID\nSECRET=$NEW_ID_SECRET" > "$TGPATH/UUID/$DEVICE_UUID".TXT
     else
-      # Create README.TG file on device
-      printf "Уважаемый пользователь!\r\n\r\nК сожалению, на этом терминале не осталось свободных номеров для регистрации." > "$MOUNTPATH/README".TG
+      # Create README.TXT file on device
+      printf "Уважаемый пользователь!\r\n\r\nК сожалению, на этом терминале не осталось свободных номеров для регистрации." > "$MOUNTPATH/README".TXT
 
       # Force to unmount $DEVICE
       umount -f "$DEVICE" &> /dev/null
@@ -577,17 +577,17 @@ else
     mkdir "$MOUNTPATH/POSTMAN"
   fi
 
-  # Create SYSTEM.TG file with ID and SECRET
-  printf "[TELEGRAPH]\r\nID=$ID\r\nSECRET=$SECRET" > "$MOUNTPATH/SYSTEM".TG
+  # Create CONFIG.SYS file with ID and SECRET
+  printf "[TELEGRAPH]\r\nID=$ID\r\nSECRET=$SECRET" > "$MOUNTPATH/CONFIG".SYS
 
-  # Make SYSTEM.TG file readonly and hidden
-  fatattr +rh "$MOUNTPATH/SYSTEM".TG
+  # Make CONFIG.SYS file readonly and hidden
+  fatattr +rh "$MOUNTPATH/CONFIG".SYS
 
   # Only if this device is a common device,
   # because of POSTMAN doesn't have INBOX and OUTBOX directories
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
     # Send a letter by terminal to user
-    printf "Уважаемый пользователь!\r\n\r\nВам присвоен новый уникальный идентификатор — $ID.\r\n\r\nБудьте внимательны: за каждым устройством закрепляется только один уникальный идентификатор. Вы не сможете использовать этот идентифиактор для обмена сообщениями, если устройство будет утрачено или его содержимое будет повреждено.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID".TG
+    printf "Уважаемый пользователь!\r\n\r\nВам присвоен новый уникальный идентификатор — $ID.\r\n\r\nБудьте внимательны: за каждым устройством закрепляется только один уникальный идентификатор. Вы не сможете использовать этот идентифиактор для обмена сообщениями, если устройство будет утрачено или его содержимое будет повреждено.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/INBOX/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID".TXT
   fi
 fi
 
