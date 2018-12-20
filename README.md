@@ -1,2 +1,2 @@
 # Telegraph
-Mail we love.
+Sneakernet implementation
