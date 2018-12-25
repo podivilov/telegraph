@@ -1,2 +1,2 @@
-# Telegraph
+# Telegraph Mail
 Sneakernet implementation
