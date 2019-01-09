@@ -1,2 +1,2 @@
-# Telegraph Mail
-Sneakernet implementation
+# Telegraph
+Voluntary telegraph network
