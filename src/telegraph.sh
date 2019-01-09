@@ -19,7 +19,7 @@ shopt -s extglob
 
 # Copyright information
 AUTHOR="Mihail Podivilov"
-VERSION="2019-1"
+VERSION="2019.1"
 YEAR="`date +%Y`"
 
 # Terminal-specific variables
@@ -123,8 +123,8 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     # Common device type
     DEVICE_TYPE="COMMON"
   else
-    # Postman device type
-    DEVICE_TYPE="POSTMAN"
+    # Agent device type
+    DEVICE_TYPE="AGENT"
   fi
 
   # Force to create $MOUNTPATH
@@ -146,10 +146,10 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     cd "$MOUNTPATH/Inbox"  > /dev/null 2>&1; rm -rf !(*.txt);
     cd "$MOUNTPATH/Outbox" > /dev/null 2>&1; rm -rf !(*.txt);
     cd "$TGPWD"
-  # If this device is a postman device
+  # If this device is a agent device
   else
-    # Remove all but postman device Telegraph files
-    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(Postman|config.ini);
+    # Remove all but agent device Telegraph files
+    cd "$MOUNTPATH"        > /dev/null 2>&1; rm -rf !(Agent|config.ini);
     cd "$TGPWD"
   fi
 
@@ -165,9 +165,9 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     exit 1
   fi
 
-  # If this device is a postman device
-  if [[ "$DEVICE_TYPE" == "POSTMAN" ]]; then
-    # Get postman device ID from $MOUNTPATH/config.ini
+  # If this device is a agent device
+  if [[ "$DEVICE_TYPE" == "AGENT" ]]; then
+    # Get agent device ID from $MOUNTPATH/config.ini
     ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d "\r")
 
     # Check if destination terminal ID is correct
@@ -176,7 +176,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       umount -f "$DEVICE" &> /dev/null
 
       # Notify user about we are encountered unexpected error
-      log error "Postman device found, but it's ID seems isn't set properly. Giving up!"; beep 8 &
+      log error "Agent device found, but it's ID seems isn't set properly. Giving up!"; beep 8 &
       exit 1
     fi
 
@@ -186,29 +186,29 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     # Set ORIGIN_TERMINAL_ID variable
     ORIGIN_TERMINAL_ID=$(echo "$ID" | cut -c1-7)"0000"
 
-    # Check postman identity
-    POSTMAN_SECRET=$(cat "$MOUNTPATH/config.ini"            | sed -n 3p | cut -d "=" -f2)
-    ORIGIN_POSTMAN_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID" | sed -n 3p | cut -d "=" -f2)
+    # Check agent identity
+    AGENT_SECRET=$(cat "$MOUNTPATH/config.ini"            | sed -n 3p | cut -d "=" -f2)
+    ORIGIN_AGENT_SECRET=$(cat "$TGPATH/UUID/$DEVICE_UUID" | sed -n 3p | cut -d "=" -f2)
 
-    # If this postman device is origin postman device
+    # If this agent device is origin agent device
     # for this terminal
-    if [[ "$POSTMAN_SECRET" == "$ORIGIN_POSTMAN_SECRET" ]]; then
-      log notice "Origin Postman device found."
-      # Check if the $MOUNTPATH/Postman directory exists and not empty
-      if [[ ! -z "$(ls -A $MOUNTPATH/Postman 2>/dev/null)" ]]; then
+    if [[ "$AGENT_SECRET" == "$ORIGIN_AGENT_SECRET" ]]; then
+      log notice "Origin agent device found."
+      # Check if the $MOUNTPATH/Agent directory exists and not empty
+      if [[ ! -z "$(ls -A $MOUNTPATH/Agent 2>/dev/null)" ]]; then
         # Copy ingoing mail to $TGPATH/MESSAGES/INGOING
-        cp -rf "$MOUNTPATH/Postman"* "$TGPATH/MESSAGES/INGOING"
+        cp -rf "$MOUNTPATH/Agent"* "$TGPATH/MESSAGES/INGOING"
 
-        # Remove all ingoing messages for $MOUNTPATH/Postman/*
-        rm -rf "$MOUNTPATH/Postman/"*
+        # Remove all ingoing messages for $MOUNTPATH/Agent/*
+        rm -rf "$MOUNTPATH/Agent/"*
 
-        # Force to unmount postman device
+        # Force to unmount agent device
         umount -f "$DEVICE" &> /dev/null
 
         # Notify user about success
         log notice "Copied ingoing mail."
       else
-        # Force to unmount postman device
+        # Force to unmount agent device
         umount -f "$DEVICE" &> /dev/null
 
         # Notify user about there is no ingoing mail found
@@ -216,29 +216,29 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
         exit 1
       fi
     else
-      log notice "Not origin postman device found."
+      log notice "Not origin agent device found."
       if [[ ! -z "$(ls -A $TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID 2>/dev/null)" ]]; then
-        # Force to create postman directory
-        mkdir -p "$MOUNTPATH/Postman"
+        # Force to create agent directory
+        mkdir -p "$MOUNTPATH/Agent"
 
-        # Copy all outgoing messages to postman directory
-        cp -rf "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/"* "$MOUNTPATH/Postman"
+        # Copy all outgoing messages to agent directory
+        cp -rf "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/"* "$MOUNTPATH/Agent"
 
         # Remove all outgoing messages for $ORIGIN_TERMINAL_ID
         rm -rf "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID"
 
-        # Force to unmount postman device
+        # Force to unmount agent device
         umount -f "$DEVICE" &> /dev/null
 
         # Notify user about success
-        log notice "Copied outgoing mail to postman directory."; beep 2 &
+        log notice "Copied outgoing mail to agent directory."; beep 2 &
         exit 0
       else
-        # Force to unmount postman device
+        # Force to unmount agent device
         umount -f "$DEVICE" &> /dev/null
 
         # Notify user about there is no outgoing messages found
-        log error "No outgoing messages found for postman device terminal. Giving up!"; beep 8 &
+        log error "No outgoing messages found for agent device terminal. Giving up!"; beep 8 &
         exit 1
       fi
     fi
@@ -549,15 +549,15 @@ else
     # Notify user about we are filling the common device
     log notice "Filling the common device..."
   else
-    # Postman device type
-    DEVICE_TYPE="POSTMAN"
+    # Agent device type
+    DEVICE_TYPE="AGENT"
 
-    # Notify user about we are filling the postman device
-    log notice "Filling the postman device..."
+    # Notify user about we are filling the agent device
+    log notice "Filling the agent device..."
   fi
 
   # Create this path only f this device is a common device,
-  # because of postman device doesn't have Inbox and Outbox directories
+  # because of agent device doesn't have Inbox and Outbox directories
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
     # Create $TGPATH/MESSAGES/INGOING/$ID for new ID
     mkdir -p "$TGPATH/MESSAGES/INGOING/$ID"
@@ -571,10 +571,10 @@ else
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
     # Create Inbox and Outbox directories
     mkdir "$MOUNTPATH"/{Inbox,Outbox}
-  # If this device is a postman device
+  # If this device is a agent device
   else
-    # Create postman directory
-    mkdir "$MOUNTPATH/Postman"
+    # Create agent directory
+    mkdir "$MOUNTPATH/Agent"
   fi
 
   # Create config.ini file with ID and secret
@@ -584,7 +584,7 @@ else
   fatattr +rh "$MOUNTPATH/config".ini
 
   # Only if this device is a common device,
-  # because of postman doesn't have Inbox and Outbox directories
+  # because of agent doesn't have Inbox and Outbox directories
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
     # Send a letter by terminal to user
     printf "Уважаемый пользователь!\r\n\r\nВам присвоен новый уникальный идентификатор — $ID.\r\n\r\nБудьте внимательны: за каждым устройством закрепляется только один уникальный идентификатор.\r\n\r\nВы не сможете использовать этот идентифиактор для обмена сообщениями, если устройство будет утрачено или его содержимое будет повреждено.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/Inbox/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID".txt
