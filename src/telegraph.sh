@@ -23,10 +23,10 @@ VERSION="2019.1"
 YEAR="`date +%Y`"
 
 # Terminal-specific variables
-COUNTRY_ID="1"                # Russia
-ZONE_ID="0455"                # Kolomna
-TERMINAL_ID="00"              # Terminal ID
-TERMINAL_UID="0000"           # Terminal UID
+COUNTRY_ID=                   # Country
+ZONE_ID=                      # Zone
+TERMINAL_ID=                  # Terminal ID
+TERMINAL_UID=                 # Terminal UID
 TGPATH="/root/Telegraph"      # Telegraph working directory
 MOUNTPATH="/mnt"              # Mount path
 
