@@ -86,10 +86,10 @@ for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev | grep "sd.*[1-9]"
 done
 
 # Set $DEVICE with /tmp/device contents
-DEVICE="`cat /tmp/device`"; rm -f /tmp/device
+DEVICE="`cat /tmp/device 2>/dev/null`"; rm -f /tmp/device
 
 # If there is no valid device were found
-if [[ -z "$(lsblk $DEVICE 2>/dev/null)" ]]; then
+if [[ -z "$(lsblk $DEVICE 2>/dev/null)" || ! -f "/tmp/device" ]]; then
   log error "No valid device found. Giving up!"; beep 8 &
   exit 1
 fi
