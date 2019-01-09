@@ -19,7 +19,7 @@ shopt -s extglob
 
 # Copyright information
 AUTHOR="Mihail Podivilov"
-VERSION="0.16.1"
+VERSION="2019-1"
 YEAR="`date +%Y`"
 
 # Terminal-specific variables
