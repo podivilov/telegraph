@@ -27,7 +27,7 @@ COUNTRY_ID="1"                # Russia
 ZONE_ID="0455"                # Kolomna
 TERMINAL_ID="00"              # Terminal ID
 TERMINAL_UID="0000"           # Terminal UID
-TGPATH="/root/TELEGRAPH"      # Telegraph working directory
+TGPATH="/root/Telegraph"      # Telegraph working directory
 MOUNTPATH="/mnt"              # Mount path
 
 # Enable sound notifications
@@ -109,7 +109,7 @@ if [[ -z "$DEVICE_UUID" ]]; then
 fi
 
 # If $DEVICE is a valid Telegraph device
-if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEVICE_UUID" ]]; then
+if blkid -d | grep -q "$DEVICE: LABEL=\"Telegraph\"" && [[ -f "$TGPATH/UUID/$DEVICE_UUID" ]]; then
 
   # 1. Prepare the device
   # 1.1. Force to create $MOUNTPATH
@@ -201,8 +201,8 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       log notice "Origin agent device found."
       # Check if the $MOUNTPATH/Agent directory exists and not empty
       if [[ ! -z "$(ls -A $MOUNTPATH/Agent 2>/dev/null)" ]]; then
-        # Copy ingoing mail to $TGPATH/MESSAGES/INGOING
-        cp -rf "$MOUNTPATH/Agent"* "$TGPATH/MESSAGES/INGOING"
+        # Copy ingoing mail to $TGPATH/Messages/Ingoing
+        cp -rf "$MOUNTPATH/Agent"* "$TGPATH/Messages/Ingoing"
 
         # Remove all ingoing messages for $MOUNTPATH/Agent/*
         rm -rf "$MOUNTPATH/Agent/"*
@@ -222,15 +222,15 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       fi
     else
       log notice "Not origin agent device found."
-      if [[ ! -z "$(ls -A $TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID 2>/dev/null)" ]]; then
+      if [[ ! -z "$(ls -A $TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID 2>/dev/null)" ]]; then
         # Force to create agent directory
         mkdir -p "$MOUNTPATH/Agent"
 
         # Copy all outgoing messages to agent directory
-        cp -rf "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/"* "$MOUNTPATH/Agent"
+        cp -rf "$TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/"* "$MOUNTPATH/Agent"
 
         # Remove all outgoing messages for $ORIGIN_TERMINAL_ID
-        rm -rf "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID"
+        rm -rf "$TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID"
 
         # Force to unmount agent device
         umount -f "$DEVICE" &> /dev/null
@@ -299,7 +299,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       # Recipient attached to this terminal
       if [[ "$SIZE" -le 65535 && "$NUMBER" =~ ^[0-9]+$ && "$NUMBER_LENGTH" == "11" ]]; then
         # Does recipient attached to this terminal?
-        if [[ -d "$TGPATH/MESSAGES/INGOING/$NUMBER" ]]; then
+        if [[ -d "$TGPATH/Messages/Ingoing/$NUMBER" ]]; then
           # Is the recipient ID is not equal to sender ID?
           if [[ "$NUMBER" == "$ORIGIN_ID" ]]; then
             # +1 to skipped files counter
@@ -308,13 +308,13 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
             # +1 to correct files counter
             ((CORRECT_FILES++))
 
-            # Copy this file to $TGPATH/MESSAGES/INGOING
+            # Copy this file to $TGPATH/Messages/Ingoing
             SUFFIX_NUMBER="0"
-            while test -e "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX"; do
+            while test -e "$TGPATH/Messages/Ingoing/$NUMBER/$ID$SUFFIX"; do
               ((++SUFFIX_NUMBER))
               SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
             done
-            cp "$FILE" "$TGPATH/MESSAGES/INGOING/$NUMBER/$ID$SUFFIX"
+            cp "$FILE" "$TGPATH/Messages/Ingoing/$NUMBER/$ID$SUFFIX"
 
             # Remove this file from Outbox of user
             rm "$FILE"
@@ -335,16 +335,16 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
             # +1 to correct files counter
             ((CORRECT_FILES++))
 
-            # Force to create $TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER
-            mkdir -p "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER" &> /dev/null
+            # Force to create $TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/$NUMBER
+            mkdir -p "$TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/$NUMBER" &> /dev/null
 
-            # Copy this file to $TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER
+            # Copy this file to $TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/$NUMBER
             SUFFIX_NUMBER="0"
-            while test -e "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX"; do
+            while test -e "$TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX"; do
               ((++SUFFIX_NUMBER))
               SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
             done
-            cp "$FILE" "$TGPATH/MESSAGES/OUTGOING/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX"
+            cp "$FILE" "$TGPATH/Messages/Outgoing/$ORIGIN_TERMINAL_ID/$NUMBER/$ID$SUFFIX"
 
             # Remove this file from Outbox of user
             rm "$FILE"
@@ -390,12 +390,12 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
     log notice "No outgoing mail were found. Skipping."
   fi
 
-  # Check $TGPATH/MESSAGES/INGOING/$ID folder
+  # Check $TGPATH/Messages/Ingoing/$ID folder
   # for ingoing messages. Skip, if there is
   # no new ingoing messages are presented
-  if [[ ! -z "$(ls -A $TGPATH/MESSAGES/INGOING/$ID 2>/dev/null)" ]]; then
+  if [[ ! -z "$(ls -A $TGPATH/Messages/Ingoing/$ID 2>/dev/null)" ]]; then
     # Retrieve all new messages to $MOUNTPOINT/Inbox folder
-    for FILE in "$TGPATH/MESSAGES/INGOING/$ID/"*; do
+    for FILE in "$TGPATH/Messages/Ingoing/$ID/"*; do
       # +1 to retrieved messages count
       ((RETRIEVED_MESSAGES++))
 
@@ -411,7 +411,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       # Copy this file to $MOUNTPATH/Inbox
       cp "$FILE" "$MOUNTPATH/Inbox/$FILE_BASENAME$SUFFIX".txt
 
-      # Remove this file from $TGPATH/MESSAGES/INGOING/$ID of user
+      # Remove this file from $TGPATH/Messages/Ingoing/$ID of user
       rm "$FILE"
     done
 
@@ -430,7 +430,7 @@ else
   # 2. Prepare to format
   # 2.1. Force to create $MOUNTPATH
   # 2.2. Force to unmount $DEVICE
-  # 2.3. Format $DEVICE to FAT32 with label "TELEGRAPH"
+  # 2.3. Format $DEVICE to FAT32 with label "Telegraph"
   # 2.4. Mount $DEVICE to $MOUNTPATH
   # 2.5. Fill $DEVICE with Telegraph data
 
@@ -453,7 +453,7 @@ else
   #                              SECRET=SECRET_KEY (generated once)
   #                              - each file name is equals to DEVICE_HARDWARE_ID.txt
   #
-  # $TGPATH/MESSAGES/INGOING/ID - each file contents is equals to:
+  # $TGPATH/Messages/Ingoing/ID - each file contents is equals to:
   #                              MESSAGE_BODY
   #                              - each file name is equals to user ID,
   #                              what has been sended this file
@@ -486,7 +486,7 @@ else
   # Force to create subdirectories
   # in $TGPATH
   mkdir -p "$TGPATH/UUID"
-  mkdir -p "$TGPATH/MESSAGES/"{INGOING,OUTGOING}
+  mkdir -p "$TGPATH/Messages/"{Ingoing,Outgoing}
 
   # Check is this device already been registered
   if [[ -f "$TGPATH/UUID/$DEVICE_UUID" ]]; then
@@ -504,8 +504,8 @@ else
   # Force to unmount $DEVICE
   umount -f "$DEVICE" &> /dev/null
 
-  # Format $DEVICE to FAT32 with label "TELEGRAPH"
-  mkdosfs -F 32 -i "`echo $DEVICE_UUID | sed 's/-//'`" -I "$DEVICE" -n "TELEGRAPH" &> /dev/null
+  # Format $DEVICE to FAT32 with label "Telegraph"
+  mkdosfs -F 32 -i "`echo $DEVICE_UUID | sed 's/-//'`" -I "$DEVICE" -n "Telegraph" &> /dev/null
 
   # Mount $DEVICE to $MOUNTPATH
   mount "$DEVICE" "$MOUNTPATH" &> /dev/null
@@ -564,8 +564,8 @@ else
   # Create this path only f this device is a common device,
   # because of agent device doesn't have Inbox and Outbox directories
   if [[ "$DEVICE_TYPE" == "COMMON" ]]; then
-    # Create $TGPATH/MESSAGES/INGOING/$ID for new ID
-    mkdir -p "$TGPATH/MESSAGES/INGOING/$ID"
+    # Create $TGPATH/Messages/Ingoing/$ID for new ID
+    mkdir -p "$TGPATH/Messages/Ingoing/$ID"
   fi
 
   #
