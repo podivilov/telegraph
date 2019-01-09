@@ -400,7 +400,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       ((RETRIEVED_MESSAGES++))
 
       # Get file basename and remove extension
-      FILE_BASENAME=$(basename "$FILE" | cut -f 1 -d '.')
+      FILE_BASENAME=$(basename "$FILE" | cut -f 1 -d '.' | sed -e 's/([^()]*)//g' | tr -d ' ')
 
       SUFFIX_NUMBER="0"
       while test -e "$MOUNTPATH/Inbox/$FILE_BASENAME$SUFFIX".txt; do
