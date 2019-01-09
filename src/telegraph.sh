@@ -2,7 +2,7 @@
 
 #
 # Telegraph
-# (c) 2018 Mihail Podivilov
+# (c) 2019 Mihail Podivilov
 #
 # See copyright notice in LICENSE
 #
@@ -19,7 +19,7 @@ shopt -s extglob
 
 # Copyright information
 AUTHOR="Mihail Podivilov"
-VERSION="0.13.1"
+VERSION="0.16.1"
 YEAR="`date +%Y`"
 
 # Terminal-specific variables
@@ -74,7 +74,7 @@ if [[ "$UID" != "0" ]]; then
 fi
 
 # Set DEVICE variable with flash device path
-for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev); do
+for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev | grep "sd.*[1-9]"); do
     (
         syspath="${sysdevpath%/dev}"
         device="$(udevadm info -q name -p $syspath)"
@@ -168,7 +168,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   # If this device is a postman device
   if [[ "$DEVICE_TYPE" == "POSTMAN" ]]; then
     # Get postman device ID from $MOUNTPATH/config.ini
-    ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
+    ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d "\r")
 
     # Check if destination terminal ID is correct
     if [[ "`echo -n \"$ID\" | wc -c`" != "11" ]]; then
@@ -262,10 +262,10 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
   fi
 
   # If all is okay, get ID from $MOUNTPATH/config.ini
-  ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d '\r')
+  ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d "\r")
 
   # For equals check
-  ORIGIN_ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2)
+  ORIGIN_ID=$(cat "$MOUNTPATH/config.ini" | sed -n 2p | cut -d "=" -f2 | tr -d "\r")
 
   # Check Outbox folder in $MOUNTPATH/Outbox
   # for outgoing messages. Skip, if there is
@@ -364,7 +364,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
         ((++SUFFIX_NUMBER))
         SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
       done
-      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории Outbox.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .txt\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории Outbox. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/Inbox/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".txt
+      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории Outbox.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n * Файл сообщения имеет расширение .txt\r\n * Объём сообщения не превышает заявленный лимит символов\r\n * Указан правильный номер получателя письма\r\n * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории Outbox. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/Inbox/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".txt
 
       # Notify user about skipped files count
       log info "Successfully sent $CORRECT_FILES letter(-s) and skipped $SKIPPED_FILES letter(-s)."
@@ -374,7 +374,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
         ((++SUFFIX_NUMBER))
         SUFFIX="$(printf -- ' (%d)' "$SUFFIX_NUMBER")"
       done
-      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории Outbox.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n  * Файл сообщения имеет расширение .txt\r\n  * Объём сообщения не превышает 65535 символов\r\n  * Указан правильный номер получателя письма\r\n  * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории Outbox. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/Inbox/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".txt
+      printf "Уважаемый пользователь!\r\n\r\nНам не удалось произвести отправку одного или нескольких сообщений, которые были расположены в директории Outbox.\r\n\r\nПожалуйста, убедитесь в том, что:\r\n\r\n * Файл сообщения имеет расширение .txt\r\n * Объём сообщения не превышает заявленный лимит символов\r\n * Указан правильный номер получателя письма\r\n * Вы отправляете сообщение не самому себе\r\n\r\nОбратите внимание: все недоставленные письма всё ещё находятся в директории Outbox. Вы можете попытаться исправить ошибки и повторить отправку.\r\n\r\n--\r\nЭто сообщение было сгенерировано автоматически.\r\nПожалуйста, не отвечайте на него.\r\n" > "$MOUNTPATH/Inbox/$COUNTRY_ID$ZONE_ID$TERMINAL_ID$TERMINAL_UID$SUFFIX".txt
 
       # Notify user about skipped files count
       log info "Skipped $SKIPPED_FILES letter(-s), no correct letters were found."
@@ -409,10 +409,10 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"TELEGRAPH\"" && [[ -f "$TGPATH/UUID/$DEV
       # Remove this file from $TGPATH/MESSAGES/INGOING/$ID of user
       rm "$FILE"
     done
-    
+
     # Notify user about retrieved messages
     log info "Retrieved $RETRIEVED_MESSAGES message(-s)."
-      
+
   # If no ingoing mail were found
   else
     log notice "No ingoing mail were found. Skipping."
