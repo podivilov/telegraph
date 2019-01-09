@@ -36,6 +36,10 @@ ENABLE_SOUND="1"
 # Enable debug mode
 DEBUG="0"
 
+# Unset this variable when
+# setting up is over
+SETUP="0"
+
 #
 # Functions
 #
@@ -66,6 +70,18 @@ function log() {
 
 # Print information about copyright
 echo -e "\nTelegraph $VERSION  Copyright (C) $YEAR $AUTHOR\n"
+
+# Check if the configuration has been completed
+if ! [ -z "$SETUP" ]; then
+  log error "You need to set up global environment variables in the script before starting."; beep 8 &
+  exit 1
+fi
+
+# Check mkdosfs program presence in the system
+if ! [ -x "$(command -v mkdosfs)" ]; then
+  log error "Program \"mkdosfs\" isn't installed."; beep 8 &
+  exit 1
+fi
 
 # Check if we are running from non-root user
 if [[ "$UID" != "0" ]]; then
