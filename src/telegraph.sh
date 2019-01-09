@@ -69,7 +69,7 @@ echo -e "\nTelegraph $VERSION  Copyright (C) $YEAR $AUTHOR\n"
 
 # Check if we are running from non-root user
 if [[ "$UID" != "0" ]]; then
-  log error "Must be run from root user. Giving up!"; beep 8 &
+  log error "Must be run as root user. Giving up!"; beep 8 &
   exit 1
 fi
 
