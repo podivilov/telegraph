@@ -94,7 +94,7 @@ done
 DEVICE="`cat /tmp/device 2>/dev/null`"; rm -f /tmp/device
 
 # If there is no valid device were found
-if [[ -z "$(lsblk $DEVICE 2>/dev/null)" || -z "`cat /tmp/device 2>/dev/null`" ]]; then
+if [[ -z "$(lsblk $DEVICE 2>/dev/null)" || -z "$DEVICE" ]]; then
   log error "No valid device found. Giving up!"; beep 8 &
   exit 1
 fi
