@@ -73,6 +73,11 @@ if [[ "$UID" != "0" ]]; then
   exit 1
 fi
 
+# Create an empty /tmp/device file
+# to prevent error message if for cycle will not
+# find any suitable devices
+touch /tmp/device
+
 # Set DEVICE variable with flash device path
 for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev | grep "sd.*[1-9]"); do
     (
@@ -89,7 +94,7 @@ done
 DEVICE="`cat /tmp/device 2>/dev/null`"; rm -f /tmp/device
 
 # If there is no valid device were found
-if [[ -z "$(lsblk $DEVICE 2>/dev/null)" || ! -f "/tmp/device" ]]; then
+if [[ -z "$(lsblk $DEVICE 2>/dev/null)" || -z "`cat /tmp/device 2>/dev/null`" ]]; then
   log error "No valid device found. Giving up!"; beep 8 &
   exit 1
 fi
