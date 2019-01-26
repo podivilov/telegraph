@@ -174,7 +174,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"Telegraph\"" && [[ -f "$TGPATH/UUID/$DEV
     cd "$TGPWD"
   fi
 
-  # If $DEVICE has label TELEGRAPH,
+  # If $DEVICE has label Telegraph,
   # but there is no config.ini file in root,
   # force to exit and notify user
   if [[ ! -f "$MOUNTPATH/config.ini" ]]; then
@@ -265,7 +265,7 @@ if blkid -d | grep -q "$DEVICE: LABEL=\"Telegraph\"" && [[ -f "$TGPATH/UUID/$DEV
     fi
   fi
 
-  # If $DEVICE has label TELEGRAPH,
+  # If $DEVICE has label Telegraph,
   # and there is config.ini file presented in root,
   # but SECRET is not correct
   # (not set or not equals to original SECRET of user ID in root),
