@@ -11,14 +11,14 @@
 # being presented in system
 while :
 do
-  # If new Telegraph device found, run /usr/bin/telegraph
+  # If new Telegraph device found, run telegraph.sh
   if lsblk -r | grep -q "sd.*[1-9]"; then
     # Wait for 500 ms
     # for slow USB devices
     sleep 0.5
 
     # Run Telegraph
-    /usr/bin/telegraph
+    bash telegraph.sh
   fi
 
   # Waiting for Telegraph device
