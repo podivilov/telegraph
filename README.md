@@ -1,2 +1,2 @@
 # Telegraph
-Voluntary telegraph network
+Open source sneakernet implementation
