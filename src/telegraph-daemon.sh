@@ -31,7 +31,7 @@ do
       break
     fi
 
-    # Wait for 500 ms
+    # Wait for 100 ms
     # to decrease the CPU utilization
     sleep 0.1
   done
